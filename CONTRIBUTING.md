@@ -85,6 +85,261 @@ sudo usermod -a -G dialout $USER
 ```bash
 groups | grep dialout
 ```
+---
+
+## Project Structure 
+
+``` 
+
+SensBot/
+│
+├── Prototype_Rover.ino                 # Main ESP8266 firmware
+├── README.md                           # Project overview and setup guide
+├── CONTRIBUTING.md                     # Contribution guidelines
+├── LICENSE                             # Project license
+│
+├── Schematic_Sensbot_2025-03-16.pdf    # Hardware wiring schematic
+├── PCB_PCB_Sensbot_2025-03-16.pdf      # PCB design files
+├── Gerber_PCB_Sensbot_2025-03-16.pdf   # Manufacturing Gerber files
+│ 
+├── SensBot v3.f3d                      # Fusion 360 3D model
+├── SensBot v3.obj                      # Exported 3D model
+├── SensBot Wheel.dwg                   # Mechanical drawing
+├── SensBot Wheel.pdf                   # Wheel PDF drawing
+│
+├── SensBot Drafting.pdf                # Mechanical drafting documentation
+├── SensBot explode view.gif            # Exploded assembly animation
+├── SensBot explode view.avi            # Exploded assembly video
+│
+├── IMG_.jpg                            # Hardware images
+└── Screenshot_.png                     # UI / testing screenshots
+
+```
+---
+
+### 🔎 Key Notes for Contributors
+
+- All firmware changes should be made inside `Prototype_Rover.ino`
+- PLease do not modify PCB or Gerber files unless working on hardware revision
+- 3D model updates should maintain version naming (e.g., v4, v5)
+- The large media files should be optimized before committing
+- Keep file naming consistent with existing structure
+
+---
+
+---
+
+## 🛠️Troubleshooting 
+
+**This section is based on the full SensBot System and common issues related to the SensBot rover hardware, firmware, and cloud connectivity.**
+
+### 1️⃣ ESP8266 Boots But Does Not Connect to Wi-Fi
+
+Root Causes:
+- Incorrect credentials
+- 5GHz network
+- Power instability
+- Blocked firewall
+
+Steps:
+
+- Verify SSID and password inside `Prototype_Rover.ino`
+- Ensure router supports 2.4GHz
+- Open Serial Monitor and check connection logs
+- Ensure Wi-Fi initialization occurs before Blynk initialization
+- Confirm adequate power supply (minimum 5V regulated input)
+
+If Wi-Fi fails repeatedly:
+- Reduce distance from router
+- Check for hidden SSID configuration
+- Restart router
+
+---
+
+### 2️⃣ Wi-Fi Connects But Blynk Does Not Connect
+
+Root Causes:
+- Invalid Auth Token
+- Template mismatch
+- Blynk.begin() order incorrect
+- Internet connectivity issue
+
+Steps:
+
+- Verify Auth Token in firmware
+- Confirm Template ID matches Blynk dashboard
+- Ensure Wi-Fi connection is established before calling Blynk.begin()
+- Check internet availability
+- Print Blynk connection status in Serial Monitor
+
+If still failing:
+- Regenerate Auth Token
+- Re-upload firmware
+
+---
+
+### 3️⃣ Temperature / Humidity Readings Return NaN or Zero
+
+Root Causes:
+- Sensor initialization failure
+- Incorrect GPIO assignment
+- Voltage mismatch
+- Library conflict
+
+Steps:
+
+- Confirm correct DHT pin definition in `Prototype_Rover.ino`
+- Verify sensor library installation
+- Ensure sensor powered with compatible voltage
+- Add delay after sensor initialization if required
+- Print raw sensor values to Serial Monitor
+
+If values fluctuate heavily:
+- Check wiring length
+- Ensure stable 3.3V supply
+
+---
+
+### 4️⃣ Gas Sensor Values Are Unstable or Always Zero
+
+Root Causes:
+- Insufficient warm-up time
+- Incorrect analog pin configuration
+- Improper scaling logic
+- Noisy power line
+
+Steps:
+
+- Allow gas sensor warm-up (initial stabilization time)
+- Verify analog input pin configuration
+- Check scaling formula in firmware
+- Ensure clean ground connection
+- Add filtering logic if needed
+
+If readings spike randomly:
+- Check for voltage drop
+- Separate motor power from sensor power
+
+---
+
+### 5️⃣ Obstacle Detection Not Working
+
+Root Causes:
+- Incorrect trigger/echo pin assignment
+- Signal voltage mismatch
+- Faulty sensor
+
+Steps:
+
+- Confirm GPIO pin mapping in firmware
+- Verify wiring against schematic
+- Check sensor orientation
+- Print measured distance in Serial Monitor
+- Ensure correct delay timing between trigger pulses
+
+If always detecting obstacle:
+- Check echo pin floating
+- Add pull-down resistor if necessary
+
+---
+
+### 6️⃣ Motors Not Moving
+
+Root Causes:
+- Motor driver not powered
+- No common ground
+- Incorrect GPIO control pins
+- Insufficient current supply
+
+Steps:
+
+- Confirm motor driver supply voltage
+- Ensure common ground between ESP8266 and motor driver
+- Verify correct control pins in firmware
+- Test motor driver independently
+- Check enable pins (if used)
+
+If motors jitter:
+- Check PWM logic
+- Ensure adequate battery current capacity
+
+---
+
+### 7️⃣ Motors Cause ESP8266 Reset
+
+Root Causes:
+- Voltage drop during motor start
+- Shared unstable power rail
+
+Steps:
+
+- Use separate power supply for motors
+- Add decoupling capacitors
+- Ensure regulated 5V input to ESP8266
+- Monitor Serial output for reset reason
+
+ESP8266 is sensitive to voltage dips.
+
+---
+
+### 8️⃣ Firmware Upload Successful But Rover Is Inactive
+
+Root Causes:
+- setup() not completing
+- loop() blocked
+- Sensor initialization failure
+- Wi-Fi blocking loop
+
+Steps:
+
+- Add Serial prints in setup()
+- Confirm all initialization functions execute
+- Remove long blocking delays
+- Ensure Blynk.run() exists inside loop()
+- Verify no infinite blocking logic
+
+---
+
+### 9️⃣ Custom PCB Version Malfunction
+
+Root Causes:
+- It could be Wrong pin routing
+- Short circuits
+- Incorrect component orientation
+
+Steps:
+
+- Compare PCB layout with schematic
+- Verify ESP8266 pin mapping
+- Inspect solder joints
+- Check for short circuits between adjacent pads
+- Test continuity before powering
+
+---
+
+### 🔟 Random Behavior or Intermittent Failure
+
+Root Causes:
+- Floating GPIO pins
+- Power noise
+- Overheating regulator
+
+Steps:
+
+- We would suggest you to avoid using restricted ESP8266 boot pins incorrectly
+- Please Ensure proper pull-up/pull-down configuration
+- Make sure you Inspect regulator temperature
+- Also  Improve grounding layout
+- Reduce wire length where possible
+
+---
+
+**If issue persists, open a GitHub issue including:**
+
+- Board version
+- Power supply specifications
+- Serial Monitor logs
+- Description of exact failure point
 
 ---
 
